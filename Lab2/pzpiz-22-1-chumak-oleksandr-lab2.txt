@@ -1,0 +1,374 @@
+﻿
+
+Харківський національний університет радіоелектроніки
+Факультет комп’ютерних наук
+Катедра програмної інженерії
+
+
+ЗВІТ
+до лабораторної роботи № 2
+з дисципліни «Операційні системи Unix»
+на тему: «Збір та обробка інформації про платформу у середовищі Unix/Linux»
+
+
+
+Виконав
+ст. гр. ПЗПІз-22-1
+Чумак Олександр Анатолійович
+
+Перевірив
+ст. викладач катедри ПІ
+Сокорчук Ігор Петрович
+
+
+
+
+
+Харків 2026
+
+1 ІСТОРІЯ ЗМІН
+
+№	Дата	Версія звіту	Опис змін та виправлень
+1	27.03.2026	0.1	Створено розділ «Завдання»
+2	27.03.2026	0.1	Створено розділ «Опис виконаної роботи»
+3	27.03.2026	0.1	Створено розділ «Висновки»
+4	27.03.2026	0.1	Створено розділ «Додаток А»
+5	27.03.2026	0.1	Створено розділ «Додаток Б»
+
+2 ЗАВДАННЯ
+
+	Розробити Bash-скрипт, який виконує збір базової інформації про:
+    • апаратне забезпечення (Hardware); 
+    • операційну систему (System); 
+    • мережеві інтерфейси (Network), 
+	та виводить її у стандартизованому форматі.
+
+3 ОПИС ВИКОНАНОЇ РОБОТИ
+
+	У ході виконання лабораторної роботи № 2 було розроблено Bash-скрипт для збору та обробки системної інформації у середовищі Unix/Linux. Скрипт реалізує наступну функціональність:
+    1. Обробка аргументів командного рядка 
+        ◦ Підтримується опція -h|--help для виведення довідки. 
+        ◦ Параметр -n NUM дозволяє обмежити кількість архівних копій файлу. 
+        ◦ Можливе вказання власного шляху до файлу для запису результатів. 
+    2. Локалізація повідомлень 
+        ◦ Якщо системна локаль uk_UA, повідомлення виводяться українською мовою; інакше — англійською. 
+    3. Збір системної інформації 
+        ◦ Hardware: CPU, обсяг RAM, виробник і модель материнської плати, серійний номер системи. 
+        ◦ System: дистрибутив ОС, версія ядра, дата встановлення системи, ім’я хоста, час роботи системи, кількість процесів і користувачів. 
+        ◦ Network: інформація про всі мережеві інтерфейси з IP-адресами або позначкою -/- у разі їх відсутності. 
+    4. Форматування виводу 
+        ◦ Дотримано стандартизовану структуру розділів Hardware, System і Network. 
+        ◦ Вивід містить поточну дату у форматі Date: ... та Unix Timestamp одного моменту часу. 
+        ◦ Використовується точне форматування з лапками та роздільниками. 
+    5. Робота з файлами 
+        ◦ У разі відсутності каталогу для логів, він створюється за допомогою mkdir -p. 
+        ◦ Якщо файл вже існує, старі файли перейменовуються у формат ім’я-YYYYMMDD-NNNN. 
+        ◦ Кількість архівів контролюється параметром -n, старіші файли автоматично видаляються. 
+    6. Обробка помилок і логування 
+        ◦ Некоректні параметри викликають повідомлення у stderr та завершення скрипта з кодом ≠ 0. 
+        ◦ Відсутні або недоступні дані позначаються як Unknown. 
+        ◦ Використано функції для підвищення модульності та підтримки розширюваності скрипта. 
+	Таким чином, скрипт забезпечує надійний збір і архівацію системної інформації з дотриманням вимог лабораторної роботи.
+
+4 ВИСНОВКИ
+
+	В ході виконання лабораторної роботи № 2 було розроблено Bash-скрипт для збору та обробки системної інформації у середовищі Unix/Linux, який коректно збирає дані про апаратне забезпечення, операційну систему та мережеві інтерфейси, виводить їх у стандартизованому форматі, одночасно записує у лог-файл, забезпечує архівацію та контроль кількості збережених копій, обробляє помилки та підтримує локалізацію повідомлень, що дозволило набути практичних навичок роботи з утилітами системного рівня, форматуванням виводу та управлінням файлами в Unix/Linux.
+ДОДАТОК А
+Посилання на відеозапис доповіді та текст хронологічного опису доповіді
+
+	Відеозапис доповіді на YouTube:  https://youtu.be/HZzQRGEB3Zk
+
+ДОДАТОК Б
+приклади програмного коду
+     1	#!/bin/bash
+     2	
+     3	if [[ "$LANG" == uk_UA* ]] || [[ "$LC_MESSAGES" == uk_UA* ]]; then
+     4	    MSG_HELP="Usage: $(basename "$0") [-h|--help] [-n NUM] [FILE]
+     5	
+     6	Logs system specifications into a log file.
+     7	
+     8	Options:
+     9	  -h, --help     Show this help message and exit
+    10	  -n NUM         Number of archived log files to keep (integer > 0)
+    11	
+    12	Arguments:
+    13	  FILE           Path to the output file (optional)
+    14	                 If not provided, default is: ~/log/task2.out
+    15	
+    16	Notes:
+    17	  - Only one FILE argument is allowed
+    18	  - Options must come before FILE
+    19	
+    20	Examples:
+    21	  $(basename "$0")
+    22	      Write to default file
+    23	
+    24	  $(basename "$0") -n 5
+    25	      Keep 5 archived files (default path)
+    26	
+    27	  $(basename "$0") -n 5 ./logs/info.txt
+    28	      Keep 5 archived files and write to file
+    29	
+    30	  $(basename "$0") ./output.txt
+    31	      Write to specified file"
+    32	    MSG_NOT_INT="Аргумент для опції -n повинен бути цілим числом"
+    33	    MSG_GREATER="Аргумент для опції -n повинен бути більше 0"
+    34	    MSG_RENAMED="Файл %s перейменовано на %s"
+    35	    MSG_NOT_DIR="Перший аргумент повинен бути шляхом до файлу, а не до директорії"
+    36	    MSG_INVALID="Перший аргумент повинен бути дійсним шляхом до файлу"
+    37	else
+    38	    MSG_HELP="Використання: $(basename "$0") [-h|--help] [-n ЧИСЛО] [ФАЙЛ]
+    39	
+    40	Скрипт фіксує дані про систему у файл журналу.
+    41	
+    42	Параметри:
+    43	  -h, --help     Вивести цю довідку та завершити роботу
+    44	  -n ЧИСЛО       Кількість архівних файлів для збереження (ціле число > 0)
+    45	
+    46	Аргументи:
+    47	  ФАЙЛ           Шлях до файлу (необов’язковий)
+    48	                 За замовчуванням: ~/log/task2.out
+    49	
+    50	Примітки:
+    51	  - Дозволено лише один аргумент ФАЙЛ
+    52	  - Параметри повинні йти перед ФАЙЛОМ
+    53	  - Використовуйте '--', щоб завершити обробку параметрів
+    54	
+    55	Приклади:
+    56	  $(basename "$0")
+    57	      Запис у файл за замовчуванням
+    58	
+    59	  $(basename "$0") -n 5
+    60	      Зберегти 5 архівних файлів (шлях за замовчуванням)
+    61	
+    62	  $(basename "$0") -n 5 ./logs/info.txt
+    63	      Зберегти 5 архівів і записати у файл
+    64	
+    65	  $(basename "$0") ./output.txt
+    66	      Запис у вказаний файл"
+    67	    MSG_NOT_INT="Argument supplied for -n option must be an integer"
+    68	    MSG_GREATER="Argument supplied for -n option must be greater than 0"
+    69	    MSG_RENAMED="File %s was renamed to %s"
+    70	    MSG_NOT_DIR="First argument must be a filepath not a directory path"
+    71	    MSG_INVALID="First argument must be a valid filepath"
+    72	fi
+    73	
+    74	log_error() {
+    75	    echo "$1" >&2
+    76	}
+    77	
+    78	parse_args() {
+    79	    while [[ $# -gt 0 ]]; do
+    80	        case "$1" in
+    81	            -h|--help)
+    82	                echo "$MSG_HELP"
+    83	                exit 0
+    84	                ;;
+    85	            -n)
+    86	                if ! [[ "$2" =~ ^[0-9]+$ ]]; then
+    87	                    log_error "$MSG_NOT_INT"
+    88	                    exit 1
+    89	                fi
+    90	                if [ "$2" -lt 1 ]; then
+    91	                    log_error "$MSG_GREATER"
+    92	                    exit 1
+    93	                fi
+    94	
+    95	                KEEP_NUM=$2
+    96	                shift 2
+    97	                ;;
+    98	            --)
+    99	                echo "break"
+   100	                break
+   101	                ;;
+   102	            *)
+   103	                OUTPUT_FILE=$1
+   104	                break
+   105	                ;;
+   106	        esac
+   107	    done
+   108	}
+   109	
+   110	cleanup_archives() {
+   111	    local dir="$1"
+   112	    local base="$2"
+   113	    local keep="$3"
+   114	
+   115	    if [ -z "$keep" ]; then
+   116	        return
+   117	    fi
+   118	
+   119	    local archives=()
+   120	    for f in "$dir/${base}-"[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]; do
+   121	        if [ -e "$f" ]; then
+   122	            archives+=("$f")
+   123	        fi
+   124	    done
+   125	
+   126	    IFS=$'\n' sorted=($(printf '%s\n' "${archives[@]}" | sort)); unset IFS
+   127	
+   128	    local total=${#sorted[@]}
+   129	    if [ "$total" -gt "$keep" ]; then
+   130	        local to_delete=$((total - keep))
+   131	        for ((i = 0; i < to_delete; i++)); do
+   132	            rm -f "${sorted[$i]}"
+   133	        done
+   134	    fi
+   135	}
+   136	
+   137	rename_existing() {
+   138	    get_next_number() {
+   139	        local dir="$1"
+   140	        local base="$2"
+   141	        local today="$3"
+   142	        local max=-1
+   143	
+   144	        for f in "$dir/${base}-${today}-"[0-9][0-9][0-9][0-9]; do
+   145	            if [ -e "$f" ]; then
+   146	                local num_part
+   147	                num_part=$(basename "$f" | grep -oP '\d{4}$')
+   148	                local num_val=$((10#$num_part))
+   149	                if [ "$num_val" -gt "$max" ]; then
+   150	                    max=$num_val
+   151	                fi
+   152	            fi
+   153	        done
+   154	
+   155	        printf "%04d" $((max + 1))
+   156	    }
+   157	
+   158	    local filepath="$1"
+   159	    local dir
+   160	    local base
+   161	    dir="$(dirname "$filepath")"
+   162	    base="$(basename "$filepath")"
+   163	
+   164	    local today
+   165	    today="$(date '+%Y%m%d')"
+   166	
+   167	    local next_num
+   168	    next_num="$(get_next_number "$dir" "$base" "$today")"
+   169	
+   170	    NEW_ARCHIVE_NAME="${base}-${today}-${next_num}"
+   171	    local new_path="${dir}/${NEW_ARCHIVE_NAME}"
+   172	
+   173	    mv "$filepath" "$new_path"
+   174	}
+   175	
+   176	create_and_write() {
+   177	    get_sys_spec_overview() {
+   178	        get_cpu() {
+   179	            local cpu=$(lscpu 2>/dev/null | grep 'Model name' | awk -F: '{print $2}' | xargs)
+   180	            [[ -z "$cpu" ]] && cpu="Unknown"
+   181	            echo "$cpu"
+   182	        }
+   183	
+   184	        get_ram() {
+   185	            local ram=$(grep MemTotal /proc/meminfo | awk '{print int($2/1024)}')
+   186	            [[ -z "$ram" ]] && ram="Unknown"
+   187	            echo "$ram"
+   188	        }
+   189	
+   190	        get_motherboard() {
+   191	            local board_man=$(sudo dmidecode -s baseboard-manufacturer 2>/dev/null | xargs || echo "Unknown")
+   192	            local board_prod=$(sudo dmidecode -s baseboard-product-name 2>/dev/null || echo "Unknown")
+   193	            echo "$board_man $board_prod"
+   194	        }
+   195	
+   196	        get_os() {
+   197	            local os=$(grep 'PRETTY_NAME' /etc/os-release | awk -F\" '{print $2}')
+   198	            [[ -z "$os" ]] && os="Unknown"
+   199	            echo "$os"
+   200	        }
+   201	
+   202	        get_install_date() {
+   203	            local date=$(stat / 2>/dev/null | grep 'Birth' | awk '{print $2, $3}')
+   204	            [[ -z "$date" ]] && date="Unknown"
+   205	            echo "$date"
+   206	        }
+   207	
+   208	        # Date
+   209	        local NOW=$(date "+%s")
+   210	        local DATE_STR=$(LC_ALL=C date -d "@$NOW" "+Date: %a, %d %b %Y %H:%M:%S %z")
+   211	        local UNIX_TS="Unix Timestamp: $NOW"
+   212	
+   213	        # Hardware
+   214	        local CPU=$(get_cpu)
+   215	        local RAM=$(get_ram)
+   216	        local MOTHERBOARD=$(get_motherboard)
+   217	        local SERIAL=$(sudo dmidecode -s system-serial-number 2>/dev/null || echo "Unknown")
+   218	
+   219	        # System
+   220	        local OS=$(get_os)
+   221	        local KERNEL=$(uname -r)
+   222	        local INSTALL_DATE=$(get_install_date)
+   223	        local HOST=$(hostname)
+   224	        local UPTIME=$(uptime -p)
+   225	        local PROCESSES=$(ps -A --no-headers | wc -l)
+   226	        local USERS=$(who | wc -l)
+   227	        local NETWORK=$(ip -o addr | awk '{iface=$2; ip=$4; if(ip=="") ip="-/-"; print iface": "ip}')
+   228	
+   229	        echo "$DATE_STR"
+   230	        echo "$UNIX_TS"
+   231	        echo "---- Hardware ----"
+   232	        echo "CPU: \"$CPU\""
+   233	        echo "RAM: $RAM MB"
+   234	        echo "Motherboard: $MOTHERBOARD"
+   235	        echo "System Serial Number: $SERIAL"
+   236	        echo "---- System ----"
+   237	        echo "OS Distribution: \"$OS\""
+   238	        echo "Kernel version: $KERNEL"
+   239	        echo "Installation date: $INSTALL_DATE"
+   240	        echo "Hostname: $HOST"
+   241	        echo "Uptime: $UPTIME"
+   242	        echo "Processes running: $PROCESSES"
+   243	        echo "Users logged in: $USERS"
+   244	        echo "---- Network ----"
+   245	        echo "$NETWORK"
+   246	        echo '----"EOF"----'
+   247	    }
+   248	
+   249	    local filepath="$1"
+   250	    local dir
+   251	    dir="$(dirname "$filepath")"
+   252	
+   253	    if [ ! -e "$dir" ]; then
+   254	        if ! mkdir -p "$dir" 2>/dev/null; then
+   255	            log_error "$MSG_INVALID"
+   256	            exit 1
+   257	        fi
+   258	    fi
+   259	
+   260	    if ! touch "$filepath" 2>/dev/null; then
+   261	        log_error "$MSG_INVALID"
+   262	        exit 1
+   263	    fi
+   264	
+   265	    get_sys_spec_overview | tee "$OUTPUT_FILE"
+   266	}
+   267	
+   268	
+   269	main() {
+   270	    parse_args "$@"
+   271	    if [ -z "$OUTPUT_FILE" ]; then OUTPUT_FILE="$HOME/log/task2.out"; fi
+   272	
+   273	    local base_name
+   274	    base_name="$(basename "$OUTPUT_FILE")"
+   275	    local dir_name
+   276	    dir_name="$(dirname "$OUTPUT_FILE")"
+   277	
+   278	    if [ -d "$OUTPUT_FILE" ]; then
+   279	        log_error "$MSG_NOT_DIR"
+   280	        exit 1
+   281	    fi
+   282	
+   283	    if [ -e "$OUTPUT_FILE" ]; then
+   284	        rename_existing "$OUTPUT_FILE"
+   285	        cleanup_archives "$dir_name" "$base_name" "$KEEP_NUM"
+   286	        create_and_write "$OUTPUT_FILE"
+   287	    else
+   288	        create_and_write "$OUTPUT_FILE"
+   289	    fi
+   290	}
+   291	
+   292	main "$@"
