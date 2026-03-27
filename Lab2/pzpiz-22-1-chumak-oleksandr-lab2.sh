@@ -83,17 +83,17 @@ parse_args() {
                 exit 0
                 ;;
             -n)
-                shift
-                if ! [[ "$1" =~ ^[0-9]+$ ]]; then
+                if ! [[ "$2" =~ ^[0-9]+$ ]]; then
                     log_error "$MSG_NOT_INT"
                     exit 1
                 fi
-                if [ "$1" -lt 1 ]; then
+                if [ "$2" -lt 1 ]; then
                     log_error "$MSG_GREATER"
                     exit 1
                 fi
 
-                KEEP_NUM=$1
+                KEEP_NUM=$2
+                shift 2
                 ;;
             --)
                 echo "break"
