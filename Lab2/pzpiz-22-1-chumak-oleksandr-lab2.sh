@@ -79,7 +79,7 @@ parse_args() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -h|--help)
-                print_help
+                echo "$MSG_HELP"
                 exit 0
                 ;;
             -n)
